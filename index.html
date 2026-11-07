@@ -29,22 +29,30 @@
     <div class="bar"><i id="progressFill"></i></div>
   </div>
   <div class="tools">
-    <select id="voiceLang" aria-label="Voice language">
-      <option value="auto">Voice: match question</option>
-      <option value="en-US">Voice: English</option>
-      <option value="fil-PH">Voice: Filipino</option>
-    </select>
-    <span id="userBox" class="chip hidden"></span>
-    <button id="outBtn" class="chip hidden">Sign out</button>
+    <span id="userBox" class="chip user hidden"></span>
     <button id="installBtn" class="chip hidden">Install app</button>
-    <button id="soundBtn" class="chip" aria-pressed="true"></button>
-    <button id="themeBtn" class="chip"></button>
+    <details id="settings" class="menu">
+      <summary class="chip"><span aria-hidden="true">⚙</span> Settings</summary>
+      <div class="menu-panel">
+        <p class="menu-title">Display and sound</p>
+        <button id="themeBtn" class="menu-item"></button>
+        <button id="soundBtn" class="menu-item" aria-pressed="true"></button>
+        <label class="menu-field">Reading voice
+          <select id="voiceLang">
+            <option value="auto">Match question language</option>
+            <option value="en-US">English</option>
+            <option value="fil-PH">Filipino</option>
+          </select>
+        </label>
+        <button id="outBtn" class="menu-item danger hidden">Sign out</button>
+      </div>
+    </details>
   </div>
 </header>
 
 <main id="main" class="app">
 
-  <section id="login" class="hidden">
+  <section id="login" class="hidden card narrow">
     <h2>Sign in</h2>
     <p class="lead">Sign in with Google so your results are saved with your name and email.</p>
     <div id="gbtn"></div>
@@ -53,51 +61,66 @@
   </section>
 
   <section id="modeSelection">
-    <h2>How will this exam run?</h2>
+    <div class="intro">
+      <h2>Start an exam</h2>
+      <p class="lead">Enter who is taking it, then choose how the exam runs. Saved exams are listed below.</p>
+    </div>
+    <div class="step"><span class="num" aria-hidden="true">1</span><h3>Who is taking the exam?</h3></div>
+    <label class="nm card">Participant name<input id="who" placeholder="Optional, shown in results"></label>
+    <div class="step"><span class="num" aria-hidden="true">2</span><h3>Choose an exam type</h3></div>
     <div class="modes">
       <button id="customModeButton" class="mode">
         <span class="glyph" aria-hidden="true">⠿</span>
         <h3>Write my own exam</h3>
         <p>Type or paste questions and choices. The app reads them aloud.</p>
+        <span class="go">Create exam <span aria-hidden="true">→</span></span>
       </button>
       <button id="brailleModeButton" class="mode">
         <span class="glyph" aria-hidden="true">⠃⠗</span>
         <h3>Braille answer mode</h3>
         <p>Questions come from Braille paper. The app only records answers.</p>
+        <span class="go">Set up answers <span aria-hidden="true">→</span></span>
       </button>
     </div>
-    <label class="nm">Participant name<input id="who" placeholder="Optional, shown in results"></label>
-    <h3 class="sub">Saved exams</h3>
+    <div class="step"><span class="num" aria-hidden="true">3</span><h3>Or open a saved exam</h3></div>
     <div id="library" class="lib"></div>
-    <button id="teacherBtn" class="btn alt">Teacher: check results</button>
+    <div id="teacherCard" class="card teacher-card">
+      <div><h3>For teachers</h3><p>Review answers, grade essays and download results.</p></div>
+      <button id="teacherBtn" class="btn alt">Check results</button>
+    </div>
   </section>
 
   <section id="customSetup" class="hidden">
-    <div class="head"><button class="btn alt" data-go="modeSelection">Back</button><h2>Write your exam</h2></div>
-    <label class="nm">Exam name<input id="examName" value="Untitled exam"></label>
+    <div class="head"><button class="btn alt back" data-go="modeSelection"><span aria-hidden="true">←</span> Back</button><h2>Write your exam</h2></div>
+    <div class="card setup-top">
+      <label class="nm">Exam name<input id="examName" value="Untitled exam"></label>
+      <p id="totals"></p>
+    </div>
     <details class="paste">
       <summary>Paste many questions at once</summary>
+      <p class="hintline">Start each question with <code>Q:</code>, list choices as <code>A)</code> to <code>E)</code>, and end with <code>Answer:</code>.</p>
       <textarea id="pasteBox" rows="8" placeholder="Q: What is the capital of the Philippines?&#10;A) Cebu&#10;B) Manila&#10;C) Davao&#10;Answer: B"></textarea>
       <button id="importBtn" class="btn alt">Add pasted questions</button>
     </details>
-    <p id="totals" class="lead"></p>
     <div id="qList"></div>
-    <div class="dock">
-      <button id="addQ" class="btn alt">Add question</button>
-      <button id="clearQs" class="btn alt">Clear all</button>
-      <button id="saveExam" class="btn alt">Save exam</button>
-      <button id="startCustom" class="btn grow">Start exam</button>
+    <button id="addQ" class="addq" type="button"><span aria-hidden="true">+</span> Add question</button>
+    <div class="dock bar-dock">
+      <div class="group">
+        <button id="saveExam" class="btn alt">Save exam</button>
+        <button id="clearQs" class="btn alt danger">Clear all</button>
+      </div>
+      <button id="startCustom" class="btn grow">Start exam <span aria-hidden="true">→</span></button>
     </div>
   </section>
 
   <section id="brailleSetup" class="hidden">
-    <div class="head"><button class="btn alt" data-go="modeSelection">Back</button><h2>Braille answer mode</h2></div>
+    <div class="head"><button class="btn alt back" data-go="modeSelection"><span aria-hidden="true">←</span> Back</button><h2>Braille answer mode</h2></div>
     <p class="lead">The participant reads the Braille paper. The app shows no questions and only records answers.</p>
-    <div class="form">
+    <div class="form card">
       <label>Exam name<input id="bName" value="Braille exam"></label>
       <label>Number of questions<input id="bCount" type="number" min="1" max="100" value="10"></label>
       <label>Answer key, optional<input id="bKey" placeholder="For scoring, e.g. BACDE…"></label>
-      <button id="startBraille" class="btn">Start exam</button>
+      <button id="startBraille" class="btn">Start exam <span aria-hidden="true">→</span></button>
     </div>
   </section>
 
@@ -126,7 +149,17 @@
         <div id="fingerGuide" class="fingers" aria-label="Gesture guide">
           <span><b>1</b> ⠁ A</span><span><b>2</b> ⠃ B</span><span><b>3</b> ⠉ C</span><span><b>4</b> ⠙ D</span><span><b>5</b> ⠑ E</span><span><b>Thumbs-up</b> confirms</span>
         </div>
-        <p class="keys">Keyboard: A–E or 1–5 choose (T/F or 1/2 for true or false) · Enter or Ctrl+Enter confirm · M microphone · R repeat · P pause</p>
+        <div class="keys" aria-label="Keyboard shortcuts">
+          <p class="keys-title">Keyboard shortcuts</p>
+          <ul>
+            <li><kbd>A</kbd>–<kbd>E</kbd> or <kbd>1</kbd>–<kbd>5</kbd> choose</li>
+            <li><kbd>T</kbd>/<kbd>F</kbd> true or false</li>
+            <li><kbd>Enter</kbd> confirm</li>
+            <li><kbd>M</kbd> microphone</li>
+            <li><kbd>R</kbd> repeat</li>
+            <li><kbd>P</kbd> pause</li>
+          </ul>
+        </div>
       </div>
 
       <div class="right">
@@ -149,42 +182,53 @@
         <div class="nod"><span>Thumbs-up to confirm</span><div class="meter"><i id="nodMeter"></i></div></div>
       </div>
     </div>
-    <div class="dock controls">
-      <button id="cameraToggle" class="btn alt" type="button" aria-pressed="false">Camera on</button>
-      <button id="micToggle" class="btn alt" type="button" aria-pressed="false">Mic on</button>
-      <button id="repeat" class="btn alt">Repeat question</button>
-      <button id="pause" class="btn alt">Pause</button>
-      <button id="end" class="btn alt">End exam</button>
+    <div class="dock controls bar-dock">
+      <div class="group" role="group" aria-label="Devices">
+        <button id="cameraToggle" class="btn alt" type="button" aria-pressed="false">Camera on</button>
+        <button id="micToggle" class="btn alt" type="button" aria-pressed="false">Mic on</button>
+      </div>
+      <div class="group" role="group" aria-label="Exam">
+        <button id="repeat" class="btn alt">Repeat question</button>
+        <button id="pause" class="btn alt">Pause</button>
+        <button id="end" class="btn alt danger">End exam</button>
+      </div>
       <button id="confirm" class="btn grow">Confirm answer</button>
     </div>
   </section>
 
   <section id="result" class="hidden">
-    <h2>Exam complete</h2>
-    <p id="score" class="score"></p>
-    <p id="scoreNote" class="lead"></p>
+    <div class="card result-card">
+      <h2>Exam complete</h2>
+      <p id="score" class="score"></p>
+      <p id="scoreNote" class="lead"></p>
+    </div>
+    <h3 class="sub">Answers by question</h3>
     <div id="record" class="record"></div>
-    <label class="nm">File name for download<input id="fileName"></label>
-    <div class="dock">
-      <button id="toReview" class="btn alt">Teacher review</button>
-      <button id="csv" class="btn alt">Download CSV</button>
-      <button id="retake" class="btn alt">Retake</button>
+    <label class="nm card fname">File name for download<input id="fileName"></label>
+    <div class="dock bar-dock">
+      <div class="group">
+        <button id="toReview" class="btn alt">Teacher review</button>
+        <button id="csv" class="btn alt">Download CSV</button>
+        <button id="retake" class="btn alt">Retake</button>
+      </div>
       <button id="newExam" class="btn grow">New exam</button>
     </div>
   </section>
   <section id="teacher" class="hidden">
-    <div class="head"><button class="btn alt" data-go="modeSelection">Back</button><h2>Check results</h2></div>
+    <div class="head"><button class="btn alt back" data-go="modeSelection"><span aria-hidden="true">←</span> Back</button><h2>Check results</h2></div>
     <div id="attempts" class="lib"></div>
   </section>
 
   <section id="review" class="hidden">
-    <div class="head"><button class="btn alt" data-go="teacher">Back</button><h2 id="revTitle"></h2></div>
+    <div class="head"><button class="btn alt back" data-go="teacher"><span aria-hidden="true">←</span> Back</button><h2 id="revTitle"></h2></div>
     <p id="revSum" class="lead"></p>
     <div id="revList" class="lib"></div>
-    <label class="nm">Teacher comment<textarea id="revNote" rows="3"></textarea></label>
-    <div class="dock">
-      <button id="revCsv" class="btn alt">Download CSV</button>
-      <button id="revDel" class="btn alt">Delete</button>
+    <label class="nm card">Teacher comment<textarea id="revNote" rows="3"></textarea></label>
+    <div class="dock bar-dock">
+      <div class="group">
+        <button id="revCsv" class="btn alt">Download CSV</button>
+        <button id="revDel" class="btn alt danger">Delete</button>
+      </div>
       <button id="revSave" class="btn grow">Save review</button>
     </div>
   </section>
