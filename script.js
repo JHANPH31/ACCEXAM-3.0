@@ -39,6 +39,9 @@ $("who").oninput=e=>{pref.who=e.target.value;savePref()};
 $("themeBtn").onclick=()=>{pref.theme=THEMES[(THEMES.indexOf(pref.theme)+1)%3];savePref();paint()};
 $("soundBtn").onclick=()=>{pref.voice=!pref.voice;if(!pref.voice)speechSynthesis.cancel();savePref();paint()};
 $("voiceLang").onchange=e=>{pref.lang=e.target.value;savePref()};
+// close the settings menu on outside click or Escape
+document.addEventListener("click",e=>{const m=$("settings");if(m.open&&!m.contains(e.target))m.open=false});
+document.addEventListener("keydown",e=>{const m=$("settings");if(e.key==="Escape"&&m.open){m.open=false;m.querySelector("summary").focus()}});
 
 function toast(m){const t=$("toast");t.textContent=m;t.classList.add("show");clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove("show"),4000)}
 
@@ -105,14 +108,24 @@ function addQ(d={}){
   <div class="qtop"><label>Type<select class="ty"><option value="mc">Multiple choice</option><option value="tf">True or false</option><option value="essay">Essay</option></select></label>
   <label>Points<input class="pt" type="number" min="0" step="0.5"></label></div>
   <input class="q" aria-label="Question text" placeholder="Type the question or essay instructions">
-  <div class="mcp"><div class="choices">${[...LET].map(l=>`<label><span class="badge" aria-hidden="true">${BR[l]}</span><input class="o" aria-label="Choice ${l}" placeholder="Choice ${l}${l>"B"?" (optional)":""}"></label>`).join("")}</div>
-  <div class="correct">Correct answer: ${[...LET].map(l=>`<label class="pill"><input type="radio" name="c${id}" value="${l}"><span>${l}</span></label>`).join("")}</div></div>
+  <div class="mcp"><div class="choices">${[...LET].map(l=>`<label class="ch-${l}"><span class="badge" aria-hidden="true">${BR[l]}</span><input class="o" aria-label="Choice ${l}" placeholder="Choice ${l}${l>"B"?" (optional)":""}"></label>`).join("")}</div>
+  <div class="chbtns"><button type="button" class="chip addch"></button><button type="button" class="chip danger rmch"></button></div>
+  <div class="correct">Correct answer: ${[...LET].map(l=>`<label class="pill ch-${l}"><input type="radio" name="c${id}" value="${l}"><span>${l}</span></label>`).join("")}</div></div>
   <div class="tfp correct">Correct answer: <label class="pill"><input type="radio" name="t${id}" value="T"><span>True</span></label><label class="pill"><input type="radio" name="t${id}" value="F"><span>False</span></label></div>
   <label class="esp">Grading rubric or teacher notes, optional<textarea class="rb" rows="2"></textarea></label>`;
   c.querySelector(".ty").value=d.t||"mc";c.querySelector(".pt").value=d.p??1;
   c.querySelector(".q").value=d.q||"";c.querySelector(".rb").value=d.r||"";
   c.querySelectorAll(".o").forEach((i,k)=>i.value=(d.o||[])[k]||"");
   if(d.c){const r=c.querySelector((d.t==="tf"?".tfp":".mcp")+` input[value="${d.c}"]`);if(r)r.checked=true}
+  // multiple choice starts with A–C; D and E are added with a button
+  const mcp=c.querySelector(".mcp"),ins=[...c.querySelectorAll(".o")];
+  const setN=n=>{n=Math.max(3,Math.min(5,n));mcp.dataset.n=n;
+    ins.forEach((i,k)=>{if(k>=n){i.value="";const r=mcp.querySelector(`.correct input[value="${LET[k]}"]`);if(r)r.checked=false}});
+    const a=c.querySelector(".addch"),r=c.querySelector(".rmch");
+    a.textContent="+ Add choice "+(LET[n]||"");a.hidden=n>=5;r.textContent="Remove choice "+LET[n-1];r.hidden=n<=3};
+  const fill=ins.reduce((m,i,k)=>i.value?k+1:m,0),ck=LET.indexOf(d.t==="tf"?"":d.c||"")+1;setN(Math.max(fill,ck));
+  c.querySelector(".addch").onclick=()=>{const n=+mcp.dataset.n;setN(n+1);ins[n].focus();save()};
+  c.querySelector(".rmch").onclick=()=>{setN(+mcp.dataset.n-1);save();totals()};
   c.querySelector(".ty").onchange=e=>{c.dataset.t=e.target.value};
   c.querySelector(".rm").onclick=()=>{c.remove();renum();save()};
   $("qList").appendChild(c);renum();
@@ -288,7 +301,7 @@ addEventListener("keydown",e=>{ // keyboard works as a full fallback for gesture
   if(t==="tf"&&(k==="T"||k==="F"))pick(k);else if(t==="tf"&&(k==="1"||k==="2"))pick(k==="1"?"T":"F");
   else if(t==="mc"&&/^[A-E]$/.test(k))pick(k);else if(t==="mc"&&/^[1-5]$/.test(k))pick(LET[k-1]);
   else if(k==="M"&&t==="essay")recOn?stopRec(true):startRec();
-  else if(k==="ENTER"&&!e.target.closest(".controls"))confirmA();
+  else if(k==="ENTER"&&!e.target.closest(".controls,.menu"))confirmA();
   else if(k==="R")readQ();else if(k==="P")$("pause").click();else return;
   e.preventDefault();
 });
@@ -298,8 +311,8 @@ const el=(h,cls="row",tag="div")=>{const d=document.createElement(tag);d.classNa
 function renderLib(){
   const L=exams();
   $("library").replaceChildren(...(L.length?L:[null]).map(e=>{
-    if(!e)return el("No saved exams yet. Build one and it is saved when you start or press Save exam.");
-    const d=el(`<span class="grow"><b></b><small></small></span><button class="chip">Start</button><button class="chip">Edit</button><button class="chip">Rename</button><button class="chip">Delete</button>`);
+    if(!e)return el("No saved exams yet. Build one and it is saved when you start or press Save exam.","row empty");
+    const d=el(`<span class="grow"><b></b><small></small></span><span class="acts"><button class="chip primary">Start</button><button class="chip">Edit</button><button class="chip">Rename</button><button class="chip danger">Delete</button></span>`);
     d.querySelector("b").textContent=e.name;
     d.querySelector("small").textContent=`${e.qs.length} ${e.mode==="custom"?"questions":"Braille questions"}, saved ${new Date(e.updated).toLocaleDateString()}`;
     const [go,ed,rn,del]=d.querySelectorAll("button");
@@ -317,7 +330,7 @@ function renderLib(){
 function renderAtts(){
   const A=atts();
   $("attempts").replaceChildren(...(A.length?A:[null]).map(a=>{
-    if(!a)return el("No finished exams yet.");
+    if(!a)return el("No finished exams yet.","row empty");
     const d=el(`<span class="grow"><b></b><small></small></span><span class="chip"></span>`,"row","button");
     d.querySelector("b").textContent=a.exam+(a.who?" - "+a.who:"");
     d.querySelector("small").textContent=new Date(a.date).toLocaleString()+(a.email?", "+a.email:"");
@@ -372,7 +385,7 @@ const jwt=t=>JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(t.split(".
 function authUI(){
   $("userBox").textContent=user?user.name:"";$("userBox").classList.toggle("hidden",!user);
   $("outBtn").classList.toggle("hidden",!user);
-  $("teacherBtn").classList.toggle("hidden",!isTeacher());$("toReview").classList.toggle("hidden",!isTeacher());
+  $("teacherCard").classList.toggle("hidden",!isTeacher());$("toReview").classList.toggle("hidden",!isTeacher());
   if(user){pref.who=user.name;$("who").value=user.name}
 }
 function onCred(r){
