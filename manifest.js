@@ -1,13 +1,29 @@
 {
   "name": "Accessible Exam",
   "short_name": "Exam",
-  "start_url": "./index.html",
-  "scope": "./",
+  "description": "Accessible exam app with voice, gesture, and keyboard support",
+  "start_url": ".",
   "display": "standalone",
   "background_color": "#0e1022",
   "theme_color": "#0e1022",
+  "orientation": "portrait-primary",
   "icons": [
-    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
   ]
 }
